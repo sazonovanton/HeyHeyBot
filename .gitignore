@@ -1,0 +1,34 @@
+# Python
+*.pyc
+__pycache__/
+venv/
+*.venv
+env/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+*.egg
+*.egg-info
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Specific
+.env
+*.log
+*.log.*
+*.wav
