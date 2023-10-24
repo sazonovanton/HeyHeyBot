@@ -57,6 +57,8 @@ arrivial_announce = check_val(os.getenv('DISCORD_ARRIVAL_ANNOUNCE'))
 muting_announce = check_val(os.getenv('DISCORD_MUTING_ANNOUNCE'))
 leaving_announce = check_val(os.getenv('DISCORD_LEAVING_ANNOUNCE'))
 
+stop_button = '⏹️ Stop '
+
 # start bot
 intents = discord.Intents.default()
 intents.all()
@@ -218,13 +220,13 @@ async def on_voice_state_update(member, before, after):
 async def on_interaction(interaction):
     # Get audio file name
     audio_file = interaction.data['custom_id']
-    if audio_file == '⏹️ Stop ':
+    if audio_file == stop_button:
         client.voice_clients[0].stop()
-        await interaction.response.send_message(f'⏹️ Stopped', ephemeral=True, silent=True, delete_after=2)
-    await interaction.response.send_message(f'▶️ Playing: {audio_file}', ephemeral=True, silent=True, delete_after=3)
+        await interaction.response.send_message(f'⏹️ Stopped', ephemeral=True, silent=True, delete_after=1)
+    await interaction.response.send_message(f'▶️ Playing: {audio_file}', ephemeral=True, silent=True, delete_after=2)
     # Join the voice channel
     if interaction.user.voice is None:
-        await interaction.response.send_message(f'⭕ You are not in voice channel', ephemeral=True, delete_after=5)
+        await interaction.response.send_message(f'⭕ You are not in voice channel', ephemeral=True, delete_after=3)
         return
     channel = interaction.user.voice.channel
     try:
@@ -245,7 +247,7 @@ async def on_message(message):
         # Get list of audio files
         audio_files = await list_audio_files()
         # Append stop button
-        audio_files.append('⏹️ Stop ')
+        audio_files.append(stop_button)
         # Split to 25 files per button
         buttons_groups = [audio_files[i:i + 25] for i in range(0, len(audio_files), 25)]
         for group in buttons_groups:
