@@ -161,9 +161,9 @@ async def list_audio_files(sort=True):
 
 # Disconnect from voice channel
 @client.command()
-async def vc_disconnect(client):
+async def vc_disconnect(client, force=False):
     try:
-        if continue_presence:
+        if continue_presence and not force:
             # check if any user is in a current voice channel
             current_voice_channel = client.voice_clients[0].channel
             if len(current_voice_channel.members) == 1:
@@ -171,10 +171,11 @@ async def vc_disconnect(client):
                 logger.info(f'No users in {current_voice_channel.name}, disconnecting')
                 await client.voice_clients[0].disconnect()
             else:
+                # if users in a current voice channel, do nothing
                 return
         await client.voice_clients[0].disconnect()
-    except:
-        return
+    except Exception as e:
+        logger.warning(f'Error disconnecting from voice channel: {e}')
 
 # logger.info userneme and channel name when user joins voice channel
 @client.event
@@ -218,13 +219,12 @@ async def on_voice_state_update(member, before, after):
             # When user moves from one voice channel to another
             logger.info(f'{member.name} moved from {before.channel.name} to {after.channel.name}')
             # Disconnect from the previous voice channel
-            await vc_disconnect(client)
+            await vc_disconnect(client, force=True)
             # Join the new voice channel
-            channel = after.channel
             try:
-                await channel.connect()
-            except:
-                pass
+                await after.channel.connect()
+            except Exception as e:
+                logger.error(f'Error joining {after.channel.name}: {e}')
             # Play audio file
             await play(client, f'./data/greetings/{member.name}.wav', default='./data/greetings/hello.wav')
             # Disconnect from the voice channel
