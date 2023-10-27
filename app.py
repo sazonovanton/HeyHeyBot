@@ -56,6 +56,11 @@ else:
 
 stop_button = '⏹️ Stop '
 
+# Start webpage if login and password are set
+if os.getenv('WEBPAGE_USERNAME') and os.getenv('WEBPAGE_PASSWORD'):
+    from webserver import WebApp
+    WebApp()
+
 # logging (rotate log every 1 MB, keep 5 old logs)
 import logging
 from logging.handlers import RotatingFileHandler
@@ -289,8 +294,3 @@ async def on_message(message):
 
 # Run bot
 client.run(token)
-
-# # When close
-# logger.info('Closing')
-# for sound in sounds.values():
-#     sound['source'].close()

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeyHeyBot | Audio Uploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn {
+            border: 2px solid gray;
+            color: gray;
+            background-color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+        }
+
+        .file-list {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            border-bottom: 1px solid #e1e1e1;
+            padding: 1px 0;
+        }
+
+        .logout {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .logout a {
+            display: inline-block;
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="logout">
+        <a href="/logout">Logout</a>
+    </div>
+    <div class="container">
+        <h2>Upload Audio Files</h2>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="upload-btn-wrapper">
+                <button class="btn">Select an audio file</button>
+                <input type="file" name="file" accept=".mp3, .wav" required>
+                <input type="submit" value="Upload" class="btn" style="margin-top: 10px;">
+            </div>
+        </form>
+        <div class="file-list">
+            <h3>Uploaded Files</h3>
+            {% for filename in uploaded_files %}
+                <div class="file-item">
+                    <p>{{ filename }} <a href="/delete?filename={{ filename }}" onclick="return confirmDelete('{{ filename }}')" style="float: right;">🗑️</a></p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+<script>
+    function confirmDelete(filename) {
+        return confirm('Are you sure you want to delete ' + filename + '?');
+    }
+</script>
+</html>

@@ -6,9 +6,13 @@ services:
       dockerfile: Dockerfile
     container_name: HeyHeyBot
     environment:
-    #   - DISCORD_TOKEN=YOUR_DISCORD_TOKEN
+      # - DISCORD_TOKEN=YOUR_DISCORD_TOKEN
       - DISCORD_CONTINUE_PRESENCE=True
       - DISCORD_MUTING_ANNOUNCE=False
+      # - WEBPAGE_USERNAME=YOUR_WEBPAGE_USERNAME
+      # - WEBPAGE_PASSWORD=YOUR_WEBPAGE_PASSWORD
+      # - WEBPAGE_HOST=localhost
+      # - WEBPAGE_PORT=5100
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

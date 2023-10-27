@@ -24,6 +24,10 @@ services:
       - DISCORD_TOKEN=PLACE_YOUR_DISCORD_TOKEN_HERE
       - DISCORD_CONTINUE_PRESENCE=True
       - DISCORD_MUTING_ANNOUNCE=False
+      # - WEBPAGE_USERNAME=YOUR_WEBPAGE_USERNAME
+      # - WEBPAGE_PASSWORD=YOUR_WEBPAGE_PASSWORD
+      # - WEBPAGE_HOST=localhost
+      # - WEBPAGE_PORT=5100
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -36,6 +40,10 @@ Possible environment variables:
 * `DISCORD_ARRIVAL_ANNOUNCE` - Whether to announce user arrivals (default: `True`)
 * `DISCORD_LEAVE_ANNOUNCE` - Whether to announce user departures (default: `True`)  
 * `DISCORD_LOGLEVEL` - Logging level (default: `WARNING`)
+* `WEBPAGE_USERNAME` - Username for a webpage where you can upload files (required for the webserver to start)
+* `WEBPAGE_PASSWORD` - Password for this webpage (required for the webserver to start)
+* `WEBPAGE_HOST` - Host for this webpage (default `localhost`, set to something like `0.0.0.0` if you want to access webpage from outside)
+* `WEBPAGE_PORT` - Port for webserver to use (default `5100`)
 
 Then run the following command in the root directory of the project:
 ```bash
@@ -78,10 +86,17 @@ data
 ### Logs
 Logs are stored in the `./logs` directory and rotated by size (1 MB). History of 5 logs is kept.
 
+### Webserver
+You can use web interface to upload files to the `./data/audio` directory and to delete files from there. When file is uploaded it automatically converts to `.wav`. Use `!playsound` in Discord chat to request for a new updated soundboard buttons.  
+`WEBPAGE_USERNAME` and `WEBPAGE_PASSWORD` is required for a webserver to start. When it starts you can acccess it via browser on a `http://{WEBPAGE_HOST}:{WEBPAGE_PORT}/` page. Use username and password that you have set in environment variables (default location is [http://localhost:5100/](http://localhost:5100/)).  
+Please beware that there is only HTTP support for now, using it can be unsafe (that's why it defaults to localhost).  
+Uploaded files will be authomatically converted to WAV and volume will be normalized to -16.
+
 ## Usage 🚀
 
 1. Join a voice chat and experience personalized greetings!
 2. Trigger the soundboard by typing !playsound and click on the displayed buttons to play the sounds from `./data/audio` directory. Soundboard will be send to chat as a message and will remain there. If you update the `./data/audio` directory, you need to request new soundboard by typing `!playsound` again.
+3. Upload new audio to soundboard via webpage if you have set it up.
 
 Beware that there is no differentiating between servers yet. If you have multiple servers with the bot, announcements for users and soundboard will be the same on all of them.  
 
