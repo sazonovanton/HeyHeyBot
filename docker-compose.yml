@@ -7,7 +7,7 @@ services:
     container_name: HeyHeyBot
     environment:
     #   - DISCORD_TOKEN=YOUR_DISCORD_TOKEN
-      - DISCORD_RICH_PRESENCE=True
+      - DISCORD_CONTINUE_PRESENCE=True
       - DISCORD_MUTING_ANNOUNCE=False
     volumes:
       - ./data:/app/data

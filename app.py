@@ -15,7 +15,6 @@ import os
 try:
     import discord
     from discord.ext import commands
-    from discord.utils import get
 except ImportError:
     print("discord.py module not found. Please install it with 'pip install discord.py'")
     exit(1)
@@ -24,15 +23,6 @@ import asyncio
 # Audio processing
 import wave
 import contextlib
-
-# logging (rotate log every 1 MB, keep 5 old logs)
-import logging
-from logging.handlers import RotatingFileHandler
-logger = logging.getLogger('HeyHeyBot')
-logger.setLevel(logging.INFO)
-handler = RotatingFileHandler('logs/discord.log', maxBytes=1000000, backupCount=5)
-handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-logger.addHandler(handler)
 
 # bot settings stored in .env
 from dotenv import load_dotenv
@@ -52,12 +42,29 @@ def check_val(value, default=True):
 
 # bot settings
 token = os.getenv('DISCORD_TOKEN')
-rich_presence = check_val(os.getenv('DISCORD_RICH_PRESENCE'), default=False)
+continue_presence = check_val(os.getenv('DISCORD_CONTINUE_PRESENCE'), default=False)
 arrivial_announce = check_val(os.getenv('DISCORD_ARRIVAL_ANNOUNCE'))
 muting_announce = check_val(os.getenv('DISCORD_MUTING_ANNOUNCE'))
 leaving_announce = check_val(os.getenv('DISCORD_LEAVING_ANNOUNCE'))
+loglevel = os.getenv('DISCORD_LOGLEVEL')
+if loglevel is not None:
+    loglevel = loglevel.upper()
+    if loglevel not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+        loglevel = 'INFO'
+else:
+    loglevel = 'WARNING'
 
 stop_button = '⏹️ Stop '
+
+# logging (rotate log every 1 MB, keep 5 old logs)
+import logging
+from logging.handlers import RotatingFileHandler
+logger = logging.getLogger('HeyHeyBot')
+loglevel = getattr(logging, loglevel)
+logger.setLevel(loglevel)
+handler = RotatingFileHandler('logs/heyheybot.log', maxBytes=1000000, backupCount=5)
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+logger.addHandler(handler)
 
 # start bot
 intents = discord.Intents.default()
@@ -79,32 +86,45 @@ async def on_ready():
     logger.info('======')
     logger.info(f'Bot logged in as {client.user.name} (ID: {client.user.id})')
     logger.info(f'Connected to {len(client.guilds)} servers: {", ".join([guild.name for guild in client.guilds])}')
-    logger.info(f'Bot is ready. Rich presence: {rich_presence}, arrival announce: {arrivial_announce}, muting announce: {muting_announce}, leaving announce: {leaving_announce}')
+    logger.info(f'Bot is ready. Rich presence: {continue_presence}, arrival announce: {arrivial_announce}, muting announce: {muting_announce}, leaving announce: {leaving_announce}')
     logger.info('======')
 
 # Play audio file from ./data/audio folder
+sounds = {} # {filename: {'source': <discord.PCMVolumeTransformer>, 'duration': <int>}}
+async def wav_length(audio_file):
+    with contextlib.closing(wave.open(audio_file,'r')) as f:
+        frames = f.getnframes()
+        rate = f.getframerate()
+        audiolen = frames / float(rate)
+    return audiolen
+
+# returns BufferedIOBase from given sound path
+async def get_buffered_io(file):
+    return open(file, 'rb')
+
+# We are storing audio files in the dictionary to avoid opening the same file multiple times
+async def cached_sounds(audio_file):
+    if audio_file not in sounds:
+        sounds[audio_file] = {
+            'source': audio_file,
+            'duration': await wav_length(audio_file)
+        }
+        logger.debug(f'Playing {audio_file}')
+    else:
+        logger.debug(f'Playing {audio_file} from cache')
+    return sounds[audio_file]['source'], sounds[audio_file]['duration']
+
 @client.command()
 async def play(client, audio_file, audiolen=5, default='./data/greetings/hello.wav'):
     try:
         # Play audio file
-        if os.path.isfile(audio_file):
-            logger.info(f'Playing {audio_file}')
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(audio_file))
-            fname = audio_file
-            client.voice_clients[0].play(source, after=lambda e: logger.info(f'Player error: {e}') if e else None)
-        else:
-            logger.info(f'Playing default audio file')
-            source = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(default))
-            audiolen = 5
-            fname = default
-            client.voice_clients[0].play(source, after=lambda e: logger.info(f'Player error: {e}') if e else None)
+        if not os.path.isfile(audio_file):
+            audio_file = default
+        sound, audiolen = await cached_sounds(audio_file)
+        sound = discord.PCMVolumeTransformer(discord.FFmpegPCMAudio(sound), volume=1)
+        client.voice_clients[0].play(sound, after=lambda e: logger.exception(f'Player error') if e else None)
         # wait until audio is played
-        with contextlib.closing(wave.open(fname,'r')) as f:
-            frames = f.getnframes()
-            rate = f.getframerate()
-            audiolen = frames / float(rate)
-            audiolen = round(audiolen) + 1
-        await asyncio.sleep(audiolen)
+        await asyncio.sleep(audiolen + 1)
     except discord.errors.ClientException as e:
         # if bot is already playing audio file
         if 'Already playing audio' in str(e):
@@ -134,7 +154,7 @@ async def list_audio_files(sort=True):
 @client.command()
 async def vc_disconnect(client):
     try:
-        if rich_presence:
+        if continue_presence:
             # check if any user is in a current voice channel
             current_voice_channel = client.voice_clients[0].channel
             if len(current_voice_channel.members) == 1:
@@ -223,7 +243,11 @@ async def on_interaction(interaction):
     if audio_file == stop_button:
         client.voice_clients[0].stop()
         await interaction.response.send_message(f'⏹️ Stopped', ephemeral=True, silent=True, delete_after=1)
-    await interaction.response.send_message(f'▶️ Playing: {audio_file}', ephemeral=True, silent=True, delete_after=2)
+    try:
+        audiolen = sounds[f'./data/audio/{audio_file}.wav']['duration'] # audio length from cache
+    except:
+        audiolen = 1 # default audio length
+    await interaction.response.send_message(f'▶️ Playing: {audio_file}', ephemeral=True, silent=True, delete_after=audiolen)
     # Join the voice channel
     if interaction.user.voice is None:
         await interaction.response.send_message(f'⭕ You are not in voice channel', ephemeral=True, delete_after=3)
@@ -265,3 +289,8 @@ async def on_message(message):
 
 # Run bot
 client.run(token)
+
+# # When close
+# logger.info('Closing')
+# for sound in sounds.values():
+#     sound['source'].close()
