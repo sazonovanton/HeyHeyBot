@@ -66,11 +66,14 @@ handler = RotatingFileHandler('logs/heyheybot.log', maxBytes=1000000, backupCoun
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
 logger.addHandler(handler)
 
-# Start webpage if login and password are set
+# Start webpage in separate thread
 if os.getenv('WEBPAGE_USERNAME') and os.getenv('WEBPAGE_PASSWORD'):
     from webserver import WebApp
-    WebApp()
-    logger.info('Webpage started')
+    import threading
+    webapp = WebApp()
+    webapp_thread = threading.Thread(target=webapp.run)
+    webapp_thread.start()
+    logger.info(f'Webpage started')
 
 # start bot
 intents = discord.Intents.default()

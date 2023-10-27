@@ -32,6 +32,8 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+    # ports:
+    #   - 5100:5100
     restart: unless-stopped
 ```  
 Possible environment variables:
@@ -44,7 +46,7 @@ Possible environment variables:
 * `WEBPAGE_USERNAME` - Username for a webpage where you can upload files (required for the webserver to start)
 * `WEBPAGE_PASSWORD` - Password for this webpage (required for the webserver to start)
 * `WEBPAGE_HOST` - Host for this webpage (default `localhost`, set to something like `0.0.0.0` if you want to access webpage from outside)
-* `WEBPAGE_PORT` - Port for webserver to use (default `5100`)
+* `WEBPAGE_PORT` - Port for webserver to use (default `5100`, also uncomment `ports` section in `docker-compose.yml`)
 
 Then run the following command in the root directory of the project:
 ```bash

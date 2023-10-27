@@ -37,11 +37,14 @@ class WebApp:
         # set secret key
         self.app.secret_key = secrets.token_hex(16)
 
-        # start webserver
-        self.app.run(host=self.host, port=self.port, debug=False, threaded=True)
-
         # add template location
         self.app.template_folder = './templates'
+
+    def run(self):
+        '''
+        Starts the webserver.
+        '''
+        self.app.run(host=self.host, port=self.port, debug=False, threaded=True)
 
     def filelist(self, filter=('wav')):
         '''
