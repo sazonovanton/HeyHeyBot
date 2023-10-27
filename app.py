@@ -56,11 +56,6 @@ else:
 
 stop_button = '⏹️ Stop '
 
-# Start webpage if login and password are set
-if os.getenv('WEBPAGE_USERNAME') and os.getenv('WEBPAGE_PASSWORD'):
-    from webserver import WebApp
-    WebApp()
-
 # logging (rotate log every 1 MB, keep 5 old logs)
 import logging
 from logging.handlers import RotatingFileHandler
@@ -70,6 +65,12 @@ logger.setLevel(loglevel)
 handler = RotatingFileHandler('logs/heyheybot.log', maxBytes=1000000, backupCount=5)
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
 logger.addHandler(handler)
+
+# Start webpage if login and password are set
+if os.getenv('WEBPAGE_USERNAME') and os.getenv('WEBPAGE_PASSWORD'):
+    from webserver import WebApp
+    WebApp()
+    logger.info('Webpage started')
 
 # start bot
 intents = discord.Intents.default()
