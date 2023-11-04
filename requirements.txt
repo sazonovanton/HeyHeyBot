@@ -1,3 +1,4 @@
 discord.py[voice]
 python-dotenv
 flask
+pydub>=0.25.1

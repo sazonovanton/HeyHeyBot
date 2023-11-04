@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 import os
 import subprocess
 import secrets
+from pydub import AudioSegment
+from pydub.playback import play
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -33,6 +35,7 @@ class WebApp:
         self.app.add_url_rule('/delete', 'delete', self.delete, methods=['GET', 'POST'])
         self.app.add_url_rule('/login', 'login', self.login, methods=['GET', 'POST'])
         self.app.add_url_rule('/logout', 'logout', self.logout, methods=['GET', 'POST'])
+        self.app.add_url_rule('/play', 'play_audio', self.play_audio, methods=['GET'])
 
         # set secret key
         self.app.secret_key = secrets.token_hex(16)
@@ -112,6 +115,22 @@ class WebApp:
                     return render_template('index.html', error='Invalid file extension.', uploaded_files=self.filelist())
             else:
                 return render_template('index.html')
+
+    def play_audio(self):
+        '''
+        Serves the audio file with the given filename.
+        '''
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        else:
+            if request.method == 'GET':
+                filename = request.args.get('filename')
+                if filename in self.filelist():
+                    return send_from_directory(self.app.config['UPLOAD_FOLDER'], filename)
+                else:
+                    return 'File not found', 404
+            else:
+                return 'Invalid request', 400
     
     def delete(self):
         '''

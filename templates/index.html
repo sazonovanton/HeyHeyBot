@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml;utf8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTAgMGg0OHY0OEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xNCAzNmg0VjEyaC00djI0em04IDhoNFY0aC00djQwek02IDI4aDR2LThINnY4em0yNCA4aDRWMTJoLTR2MjR6bTgtMTZ2OGg0di04aC00eiIvPjwvc3ZnPg==" />
     <title>HeyHeyBot | Audio Uploader</title>
     <style>
         body {
@@ -10,7 +11,6 @@
             margin: 40px;
             background-color: #f4f4f4;
         }
-
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -18,31 +18,29 @@
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-
         .upload-btn-wrapper {
             position: relative;
             overflow: hidden;
             display: inline-block;
         }
-
         .btn {
             border: 2px solid gray;
             color: gray;
             background-color: white;
             padding: 8px 20px;
             border-radius: 8px;
-            font-size: 16px;
             font-weight: bold;
         }
-
         .upload-btn-wrapper input[type=file] {
-            font-size: 100px;
+            font-size: 20px;
             position: absolute;
             left: 0;
             top: 0;
             opacity: 0;
         }
-
+        .upload-btn-wrapper * {
+            vertical-align: middle;
+        }
         .file-list {
             margin-top: 15px;
         }
@@ -83,15 +81,21 @@
         <form action="/upload" method="post" enctype="multipart/form-data">
             <div class="upload-btn-wrapper">
                 <button class="btn">Select an audio file</button>
-                <input type="file" name="file" accept=".mp3, .wav" required>
-                <input type="submit" value="Upload" class="btn" style="margin-top: 10px;">
+                <input type="file" name="file" accept=".mp3, .wav" style="display: none;" required>
+                <!-- <input type="submit" value="Upload" class="btn"> -->
+            </div>
+            <div>
+                <input type="submit" value="Upload" class="btn">
             </div>
         </form>
         <div class="file-list">
             <h3>Uploaded Files</h3>
             {% for filename in uploaded_files %}
                 <div class="file-item">
-                    <p>{{ filename }} <a href="/delete?filename={{ filename }}" onclick="return confirmDelete('{{ filename }}')" style="float: right;">🗑️</a></p>
+                    <p>{{ filename }} 
+                        <a href="/delete?filename={{ filename }}" onclick="return confirmDelete('{{ filename }}')" style="float: right;">🗑️</a>
+                        <a href="#" data-filename="{{ filename }}" style="float: right; margin-right: 10px;" onclick="playAudio(event)">🔊</a>
+                    </p>
                 </div>
             {% endfor %}
         </div>
@@ -100,6 +104,24 @@
 <script>
     function confirmDelete(filename) {
         return confirm('Are you sure you want to delete ' + filename + '?');
+    }
+    var audio = null;
+    function playAudio(event) {
+        event.preventDefault();
+        var filename = event.target.getAttribute('data-filename');
+        if (audio && !audio.paused) {
+            audio.pause();
+            audio.currentTime = 0;
+            return;
+        }
+        fetch('/play?filename=' + filename)
+            .then(response => response.blob())
+            .then(blob => {
+                var url = URL.createObjectURL(blob);
+                audio = new Audio(url);
+                audio.play();
+            })
+            .catch(e => console.error(e));
     }
 </script>
 </html>
