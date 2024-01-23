@@ -82,7 +82,6 @@
             <div class="upload-btn-wrapper">
                 <button class="btn">Select an audio file</button>
                 <input type="file" name="file" accept=".mp3, .wav" style="display: none;" required>
-                <!-- <input type="submit" value="Upload" class="btn"> -->
             </div>
             <div>
                 <input type="submit" value="Upload" class="btn">
@@ -123,5 +122,8 @@
             })
             .catch(e => console.error(e));
     }
+    document.querySelector(".btn").addEventListener("click", function() {
+        document.querySelector('input[type="file"]').click();
+    });
 </script>
 </html>

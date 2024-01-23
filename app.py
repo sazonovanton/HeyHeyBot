@@ -62,7 +62,7 @@ from logging.handlers import RotatingFileHandler
 logger = logging.getLogger('HeyHeyBot')
 loglevel = getattr(logging, loglevel)
 logger.setLevel(loglevel)
-handler = RotatingFileHandler('logs/heyheybot.log', maxBytes=1000000, backupCount=5)
+handler = RotatingFileHandler('logs/heyheybot.log', maxBytes=1000000, backupCount=5, encoding='utf-8')
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
 logger.addHandler(handler)
 
@@ -177,7 +177,21 @@ async def vc_disconnect(client, force=False):
     except Exception as e:
         logger.warning(f'Error disconnecting from voice channel: {e}')
 
-# logger.info userneme and channel name when user joins voice channel
+async def is_same_channel(client, channel):
+    # Check if user joins same voice channel as bot currently in
+    # We don't want to play audio if person joins another voice channel
+    bot_current_vc = client.voice_clients[0].channel if client.voice_clients else None
+    logger.info(f'User joined {channel}, bot in {bot_current_vc}')
+    if bot_current_vc is None:
+        print('bot_current_vc is None')
+        return True
+    if bot_current_vc != channel:
+        print('not same channel')
+        return False
+    print('same channel')
+    return True
+
+# logger.info username and channel name when user joins voice channel
 @client.event
 async def on_voice_state_update(member, before, after):
     # If bot ignore
@@ -196,6 +210,8 @@ async def on_voice_state_update(member, before, after):
                 await channel.connect()
             except:
                 pass
+            if continue_presence and not await is_same_channel(client, channel):
+                return
             # Play audio file
             await play(client, f'./data/greetings/{member.name}.wav', default='./data/greetings/hello.wav')
             # Disconnect from the voice channel
@@ -210,6 +226,8 @@ async def on_voice_state_update(member, before, after):
                 await channel.connect()
             except:
                 pass
+            if continue_presence and not await is_same_channel(client, channel):
+                return
             # Play audio file
             await play(client, f'./data/leavings/{member.name}.wav', audiolen=1, default='./data/leavings/bye.wav')
             # Disconnect from the voice channel
@@ -225,6 +243,8 @@ async def on_voice_state_update(member, before, after):
                 await after.channel.connect()
             except Exception as e:
                 logger.error(f'Error joining {after.channel.name}: {e}')
+            if continue_presence and not await is_same_channel(client, after.channel):
+                return
             # Play audio file
             await play(client, f'./data/greetings/{member.name}.wav', default='./data/greetings/hello.wav')
             # Disconnect from the voice channel
@@ -239,6 +259,8 @@ async def on_voice_state_update(member, before, after):
                 await channel.connect()
             except:
                 pass
+            if continue_presence and not await is_same_channel(client, channel):
+                return
             # Play audio file
             await play(client, f'./data/mutings/{member.name}.wav', default='./data/mutings/muted.wav')
             # Disconnect from the voice channel
