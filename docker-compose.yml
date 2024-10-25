@@ -16,6 +16,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+      - ./certs:/app/certs
     ports:
       - 5100:5100
     restart: unless-stopped

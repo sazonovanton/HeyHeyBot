@@ -6,31 +6,92 @@
     <link rel="icon" href="data:image/svg+xml;utf8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTAgMGg0OHY0OEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xNCAzNmg0VjEyaC00djI0em04IDhoNFY0aC00djQwek02IDI4aDR2LThINnY4em0yNCA4aDRWMTJoLTR2MjR6bTgtMTZ2OGg0di04aC00eiIvPjwvc3ZnPg==" />
     <title>HeyHeyBot | Audio Uploader</title>
     <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --container-bg: #fff;
+            --text-color: #333;
+            --border-color: #e1e1e1;
+            --upload-section-bg: #f8f9fa;
+            --btn-hover-bg: #f0f0f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --current-bg: #e8f4ff;
+            --error-bg: #f8d7da;
+            --success-bg: #d4edda;
+            --modal-overlay: rgba(0,0,0,0.5);
+            --legend-bg: #fff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #404040;
+            --upload-section-bg: #363636;
+            --btn-hover-bg: #404040;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --current-bg: #1a3a5a;
+            --error-bg: #442326;
+            --success-bg: #1e4027;
+            --modal-overlay: rgba(0,0,0,0.7);
+            --legend-bg: #363636;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f4f4f4;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
+
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            background-color: #fff;
+            background-color: var(--container-bg);
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px var(--shadow-color);
+            border-radius: 8px;
         }
+
+        .upload-section {
+            background-color: var(--upload-section-bg);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
         .upload-btn-wrapper {
             position: relative;
             overflow: hidden;
             display: inline-block;
+            margin-bottom: 10px;
         }
+
         .btn {
-            border: 2px solid gray;
-            color: gray;
-            background-color: white;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            background-color: var(--container-bg);
             padding: 8px 20px;
             border-radius: 8px;
             font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        .btn:hover {
+            background-color: var(--btn-hover-bg);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
         .upload-btn-wrapper input[type=file] {
             font-size: 20px;
             position: absolute;
@@ -38,22 +99,49 @@
             top: 0;
             opacity: 0;
         }
+
         .upload-btn-wrapper * {
             vertical-align: middle;
         }
+
         .file-list {
             margin-top: 15px;
         }
 
+        .file-section {
+            background-color: var(--container-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
         .file-item {
-            border-bottom: 1px solid #e1e1e1;
-            padding: 1px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-item .version {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .file-item.current {
+            background-color: var(--current-bg);
         }
 
         .logout {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
         }
 
         .logout a {
@@ -70,60 +158,610 @@
         .logout a:hover {
             background-color: #0056b3;
         }
+
+        .discord-input {
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            width: 200px;
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .section-title {
+            color: var(--text-color);
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-actions a, .file-actions button {
+            text-decoration: none;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            padding: 0;
+            margin: 0;
+        }
+
+        .error {
+            color: #dc3545;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: var(--error-bg);
+            border-radius: 4px;
+            display: none;
+        }
+
+        .success {
+            color: #28a745;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: var(--success-bg);
+            border-radius: 4px;
+            display: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            color: var(--text-color);
+        }
+
+        .close {
+            color: var(--text-color);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            opacity: 0.7;
+        }
+
+        .greeting-history {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--upload-section-bg);
+            border-radius: 4px;
+        }
+
+        .set-greeting-btn {
+            font-size: 1.2em;
+            padding: 4px 8px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #007bff;
+        }
+
+        .set-greeting-btn:hover {
+            color: #0056b3;
+        }
+
+        .set-current-btn {
+            color: #28a745;
+        }
+
+        .set-current-btn:hover {
+            color: #218838;
+        }
+
+        .current-indicator {
+            background-color: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--legend-bg);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--shadow-color);
+            max-width: 300px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .legend.minimized {
+            max-width: 50px;
+            max-height: 50px;
+            overflow: hidden;
+            padding: 10px;
+        }
+
+        .legend.minimized .legend-content,
+        .legend.minimized .legend-title,
+        .legend.minimized .legend-controls {
+            display: none;
+        }
+
+        .legend.minimized:after {
+            content: "🎮";
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .legend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .legend-title {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+
+        .legend-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .legend-button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            color: var(--text-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .legend-button:hover {
+            background-color: var(--shadow-color);
+        }
+
+        .legend-content {
+            transition: opacity 0.3s;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+
+        .legend-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            width: 25px;
+            text-align: center;
+        }
+
+        .minimize-icon {
+            transition: transform 0.3s;
+        }
+
+        .legend.minimized .minimize-icon {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body>
     <div class="logout">
         <a href="/logout">Logout</a>
     </div>
+
     <div class="container">
-        <h2>Upload Audio Files</h2>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <div class="upload-btn-wrapper">
-                <button class="btn">Select an audio file</button>
-                <input type="file" name="file" accept=".mp3, .wav" style="display: none;" required>
-            </div>
-            <div>
-                <input type="submit" value="Upload" class="btn">
-            </div>
-        </form>
-        <div class="file-list">
-            <h3>Uploaded Files</h3>
-            {% for filename in uploaded_files %}
-                <div class="file-item">
-                    <p>{{ filename }} 
-                        <a href="/delete?filename={{ filename }}" onclick="return confirmDelete('{{ filename }}')" style="float: right;">🗑️</a>
-                        <a href="#" data-filename="{{ filename }}" style="float: right; margin-right: 10px;" onclick="playAudio(event)">🔊</a>
-                    </p>
+        {% if error %}
+        <div class="error" style="display: block;">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+        <div class="success" style="display: block;">{{ success }}</div>
+        {% endif %}
+
+        <!-- Soundboard Upload Section -->
+        <div class="upload-section">
+            <h2 class="section-title">Upload to Soundboard</h2>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <div class="upload-btn-wrapper">
+                    <button type="button" class="btn" onclick="document.getElementById('soundboard-file').click()">Select an audio file</button>
+                    <input type="file" id="soundboard-file" name="file" accept=".mp3, .wav" style="display: none;" required>
                 </div>
-            {% endfor %}
+                <div>
+                    <input type="submit" value="Upload to Soundboard" class="btn">
+                </div>
+            </form>
+        </div>
+
+        <!-- Greeting Sound Upload Section -->
+        <div class="upload-section">
+            <h2 class="section-title">Upload Greeting Sound</h2>
+            <form action="/upload_greeting" method="post" enctype="multipart/form-data">
+                <div class="upload-btn-wrapper">
+                    <button type="button" class="btn" onclick="document.getElementById('greeting-file').click()">Select an audio file</button>
+                    <input type="file" id="greeting-file" name="file" accept=".mp3, .wav" style="display: none;" required>
+                </div>
+                <div>
+                    <input type="text" name="discord_username" placeholder="Discord Username" class="discord-input" required>
+                </div>
+                <div>
+                    <input type="submit" value="Upload Greeting" class="btn">
+                </div>
+            </form>
+        </div>
+
+        <!-- File Lists -->
+        <div class="file-section">
+            <h2 class="section-title">Soundboard Files</h2>
+            <div class="file-list">
+                {% for filename in uploaded_files %}
+                    <div class="file-item">
+                        <span>{{ filename }}</span>
+                        <div class="file-actions">
+                            <button class="set-greeting-btn" onclick="showSetGreetingModal('{{ filename }}')">📢</button>
+                            <a href="#" data-filename="{{ filename }}" data-folder="soundboard" onclick="playAudio(event)">🔊</a>
+                            <a href="/delete?filename={{ filename }}&folder=soundboard" onclick="return confirmDelete('{{ filename }}')">🗑️</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="file-section">
+            <h2 class="section-title">User Greeting Sounds</h2>
+            <div id="greetings-list" class="file-list">
+                <!-- Greetings will be loaded dynamically -->
+            </div>
         </div>
     </div>
-</body>
-<script>
-    function confirmDelete(filename) {
-        return confirm('Are you sure you want to delete ' + filename + '?');
-    }
-    var audio = null;
-    function playAudio(event) {
-        event.preventDefault();
-        var filename = event.target.getAttribute('data-filename');
-        if (audio && !audio.paused) {
-            audio.pause();
-            audio.currentTime = 0;
-            return;
+
+    <!-- Set Greeting Modal -->
+    <div id="setGreetingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Set as Greeting Sound</h2>
+            <p>Select a user to set this sound as their greeting:</p>
+            <input type="text" id="usernameInput" class="discord-input" placeholder="Discord Username">
+            <button onclick="setGreeting()" class="btn btn-primary">Set Greeting</button>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend" id="controls-legend">
+        <div class="legend-header">
+            <h3 class="legend-title">Controls</h3>
+            <div class="legend-controls">
+                <button class="legend-button" id="themeToggle" title="Toggle theme">🌓</button>
+                <button class="legend-button" id="minimizeLegend" title="Minimize/Maximize">
+                    <span class="minimize-icon">⌃</span>
+                </button>
+            </div>
+        </div>
+        <div class="legend-content">
+            <div class="legend-item">
+                <span class="legend-icon">🌓</span>
+                <span>Toggle Light/Dark Theme</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon">📢</span>
+                <span>Set as Greeting Sound</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon">🔊</span>
+                <span>Play Sound</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon">🗑️</span>
+                <span>Delete Sound</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-icon">📌</span>
+                <span>Set as Current Greeting</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme handling
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.textContent = theme === 'dark' ? '🌞' : '🌓';
+            themeToggle.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
         }
-        fetch('/play?filename=' + filename)
-            .then(response => response.blob())
-            .then(blob => {
-                var url = URL.createObjectURL(blob);
-                audio = new Audio(url);
-                audio.play();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Legend handling
+        function toggleLegend() {
+            const legend = document.getElementById('controls-legend');
+            legend.classList.toggle('minimized');
+            localStorage.setItem('legendMinimized', legend.classList.contains('minimized'));
+        }
+
+        // Initialize legend state
+        function initializeLegend() {
+            const legend = document.getElementById('controls-legend');
+            const isMinimized = localStorage.getItem('legendMinimized') === 'true';
+            if (isMinimized) {
+                legend.classList.add('minimized');
+            }
+
+            legend.addEventListener('click', function(e) {
+                if (this.classList.contains('minimized') && e.target === this) {
+                    this.classList.remove('minimized');
+                    localStorage.setItem('legendMinimized', 'false');
+                }
+            });
+        }
+
+        // Initialize theme
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme('dark');
+            } else {
+                setTheme('light');
+            }
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+
+        function confirmDelete(filename) {
+            return confirm('Are you sure you want to delete ' + filename + '?');
+        }
+
+        var audio = null;
+        function playAudio(event) {
+            event.preventDefault();
+            var element = event.target;
+            var filename = element.getAttribute('data-filename');
+            var folder = element.getAttribute('data-folder');
+            
+            if (audio && !audio.paused) {
+                audio.pause();
+                audio.currentTime = 0;
+                return;
+            }
+            
+            fetch('/play?filename=' + filename + '&folder=' + folder)
+                .then(response => response.blob())
+                .then(blob => {
+                    var url = URL.createObjectURL(blob);
+                    audio = new Audio(url);
+                    audio.play();
+                })
+                .catch(e => console.error(e));
+        }
+
+        function setVersionAsCurrent(username, version) {
+            fetch('/set_version_as_current', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    version: version
+                })
             })
-            .catch(e => console.error(e));
-    }
-    document.querySelector(".btn").addEventListener("click", function() {
-        document.querySelector('input[type="file"]').click();
-    });
-</script>
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    loadGreetings();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to set version as current');
+            });
+        }
+
+        // Update file input display
+        document.getElementById('soundboard-file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'Select an audio file';
+            e.target.previousElementSibling.textContent = fileName;
+        });
+
+        document.getElementById('greeting-file').addEventListener('change', function(e) {
+            var fileName = e.target.files[0] ? e.target.files[0].name : 'Select an audio file';
+            e.target.previousElementSibling.textContent = fileName;
+        });
+
+        // Modal handling
+        var modal = document.getElementById("setGreetingModal");
+        var span = document.getElementsByClassName("close")[0];
+        var selectedSound = '';
+
+        function showSetGreetingModal(filename) {
+            selectedSound = filename;
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function setGreeting() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) {
+                alert('Please enter a Discord username');
+                return;
+            }
+
+            fetch('/set_greeting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    filename: selectedSound
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    modal.style.display = "none";
+                    document.getElementById('usernameInput').value = '';
+                    loadGreetings();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to set greeting');
+            });
+        }
+
+        function loadGreetings() {
+            fetch('/get_greetings')
+                .then(response => response.json())
+                .then(greetings => {
+                    const greetingsList = document.getElementById('greetings-list');
+                    
+                    // Group greetings by username
+                    const groupedGreetings = {};
+                    greetings.forEach(greeting => {
+                        if (!groupedGreetings[greeting.username]) {
+                            groupedGreetings[greeting.username] = [];
+                        }
+                        groupedGreetings[greeting.username].push(greeting);
+                    });
+
+                    // Clear existing list
+                    greetingsList.innerHTML = '';
+
+                    // Add each username's greetings
+                    Object.entries(groupedGreetings).forEach(([username, files]) => {
+                        const userSection = document.createElement('div');
+                        userSection.className = 'greeting-history';
+
+                        // Sort files to show current greeting first
+                        files.sort((a, b) => {
+                            if (a.is_current) return -1;
+                            if (b.is_current) return 1;
+                            return b.version - a.version;
+                        });
+
+                        files.forEach(file => {
+                            const fileItem = document.createElement('div');
+                            fileItem.className = `file-item${file.is_current ? ' current' : ''}`;
+                            
+                            const nameSpan = document.createElement('span');
+                            nameSpan.textContent = username;
+                            if (!file.is_current) {
+                                const versionSpan = document.createElement('span');
+                                versionSpan.className = 'version';
+                                versionSpan.textContent = `(Version ${file.version})`;
+                                nameSpan.appendChild(versionSpan);
+                            } else {
+                                const currentSpan = document.createElement('span');
+                                currentSpan.className = 'current-indicator';
+                                currentSpan.textContent = 'Current';
+                                nameSpan.appendChild(currentSpan);
+                            }
+                            
+                            const actions = document.createElement('div');
+                            actions.className = 'file-actions';
+                            
+                            if (!file.is_current) {
+                                const setCurrentButton = document.createElement('button');
+                                setCurrentButton.className = 'set-greeting-btn set-current-btn';
+                                setCurrentButton.textContent = '📌';
+                                setCurrentButton.title = 'Set as current greeting';
+                                setCurrentButton.onclick = () => setVersionAsCurrent(username, file.version);
+                                actions.appendChild(setCurrentButton);
+                            }
+
+                            const playButton = document.createElement('a');
+                            playButton.href = '#';
+                            playButton.textContent = '🔊';
+                            playButton.setAttribute('data-filename', file.filename);
+                            playButton.setAttribute('data-folder', 'greetings');
+                            playButton.onclick = playAudio;
+
+                            const deleteButton = document.createElement('a');
+                            deleteButton.href = `/delete?filename=${file.filename}&folder=greetings`;
+                            deleteButton.textContent = '🗑️';
+                            deleteButton.onclick = () => confirmDelete(file.filename);
+
+                            actions.appendChild(playButton);
+                            actions.appendChild(deleteButton);
+
+                            fileItem.appendChild(nameSpan);
+                            fileItem.appendChild(actions);
+                            userSection.appendChild(fileItem);
+                        });
+
+                        greetingsList.appendChild(userSection);
+                    });
+                })
+                .catch(error => console.error('Error loading greetings:', error));
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            initializeLegend();
+            loadGreetings();
+        });
+
+        // Add event listeners
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        document.getElementById('minimizeLegend').addEventListener('click', toggleLegend);
+    </script>
+</body>
 </html>

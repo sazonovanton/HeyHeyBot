@@ -1,36 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml;utf8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iNDgiIHdpZHRoPSI0OCI+PHBhdGggZD0iTTAgMGg0OHY0OEgweiIgZmlsbD0ibm9uZSIvPjxwYXRoIGQ9Ik0xNCAzNmg0VjEyaC00djI0em04IDhoNFY0aC00djQwek02IDI4aDR2LThINnY4em0yNCA4aDRWMTJoLTR2MjR6bTgtMTZ2OGg0di04aC00eiIvPjwvc3ZnPg==" />
     <title>HeyHeyBot | Login</title>
     <style>
+        :root {
+            --bg-color: #f4f4f4;
+            --container-bg: #fff;
+            --text-color: #333;
+            --border-color: #ccc;
+            --input-bg: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --btn-bg: #333;
+            --btn-color: #fff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --border-color: #404040;
+            --input-bg: #363636;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --btn-bg: #007bff;
+            --btn-color: #fff;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
-            background-color: #f4f4f4;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             max-width: 300px;
             margin: 0 auto;
-            background-color: #fff;
+            background-color: var(--container-bg);
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px var(--shadow-color);
+            border-radius: 8px;
         }
 
         .btn {
             border: none;
-            color: white;
-            background-color: #333;
+            color: var(--btn-color);
+            background-color: var(--btn-bg);
             padding: 10px 15px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             width: 100%;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
         }
 
         label {
@@ -43,15 +72,44 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--shadow-color);
         }
     </style>
 </head>
-
 <body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
     <div class="container">
         <h2>Login</h2>
+        {% if error %}
+        <p style="color: #dc3545;">{{ error }}</p>
+        {% endif %}
         <form action="/login" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
@@ -60,6 +118,41 @@
             <input type="submit" value="Login" class="btn">
         </form>
     </div>
-</body>
+    <script>
+        // Theme handling
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            document.getElementById('themeToggle').textContent = theme === 'dark' ? '🌞' : '🌓';
+        }
 
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        }
+
+        // Initialize theme
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme('dark');
+            } else {
+                setTheme('light');
+            }
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches ? 'dark' : 'light');
+                }
+            });
+        }
+
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        initializeTheme();
+    </script>
+</body>
 </html>

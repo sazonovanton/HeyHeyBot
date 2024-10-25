@@ -6,6 +6,11 @@ HeyHeyBot is a simple Discord bot with soundboard functionality that enhances yo
 - **Soundboard Functionality**: By sending `!playsound` to a chat on Discord server, you can request buttons with the names of available sounds. Clicking a button will play the corresponding sound in the voice chat.
 - **Automatic Audio Playback**: The bot joins the voice channel to play audio, ensuring a seamless experience for users.
 - **Webserver for Audio Uploads**: Application includes a webserver that allows users to upload their audio files with ease if enabled. 
+- **User-Specific Greetings**: Through the web interface, you can:
+  - Upload custom greeting sounds for specific Discord users
+  - Set existing soundboard sounds as user greetings
+  - View and manage greeting history with automatic versioning
+- **HTTPS Support**: Secure your web interface with SSL/TLS encryption for added security.
 
 ## Setup & Configuration 🛠️
 ### Prerequisites
@@ -29,9 +34,13 @@ services:
       # - WEBPAGE_PASSWORD=YOUR_WEBPAGE_PASSWORD
       # - WEBPAGE_HOST=localhost
       # - WEBPAGE_PORT=5100
+      # - SSL_CERT=/path/to/cert.pem
+      # - SSL_KEY=/path/to/key.pem
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
+      # For SSL certificates:
+      # - ./certs:/app/certs
     # ports:
     #   - 5100:5100
     restart: unless-stopped
@@ -47,6 +56,8 @@ Possible environment variables:
 * `WEBPAGE_PASSWORD` - Password for this webpage (required for the webserver to start)
 * `WEBPAGE_HOST` - Host for this webpage (default `localhost`, set to something like `0.0.0.0` if you want to access webpage from outside)
 * `WEBPAGE_PORT` - Port for webserver to use (default `5100`, also uncomment `ports` section in `docker-compose.yml`)
+* `SSL_CERT` - Path to SSL certificate file (optional, for HTTPS support)
+* `SSL_KEY` - Path to SSL private key file (optional, for HTTPS support)
 
 Then run the following command in the root directory of the project:
 ```bash
@@ -55,29 +66,48 @@ docker compose up -d
 
 ### Configuration
 - **Soundboard**: Store greeting audios in the `./data/audio` directory. Only `.wav` files are supported.
-- **Announcements**: Store announcement audios in the `./data/greetings`, `./data/leavings` and `./data/mutings` directories. Default files should be `hello.wav`, `bye.wav` and `muted.wav` respectively. If you want to use custom announcement files, you need to place them in the corresponding directories and name them `{discord_name}.wav` (e.g. `./data/greetings/cooldiscordname.wav`). Only `.wav` files are supported.  
+- **Announcements**: Store announcement audios in the `./data/greetings`, `./data/leavings` and `./data/mutings` directories. Default files should be `hello.wav`, `bye.wav` and `muted.wav` respectively. Custom greeting files are automatically versioned and stored as `{discord_name}.wav` for current greetings and `{discord_name}.{version}.wav` for previous versions. Only `.wav` files are supported.  
 
 Example directory structure:
 ```
 data
 ├── audio
-│   ├── fuze.wav
-│   ├── amogus.wav
-│   ├── pew.wav
-│   └── ...
+│   ├── fuze.wav
+│   ├── amogus.wav
+│   ├── pew.wav
+│   └── ...
 ├── greetings
-│   ├── hello.wav
-│   ├── cooldiscordname.wav
-│   └── ...
+│   ├── hello.wav
+│   ├── cooldiscordname.wav
+│   ├── cooldiscordname.1.wav
+│   ├── cooldiscordname.2.wav
+│   └── ...
 ├── leavings
-│   ├── bye.wav
-│   ├── cooldiscordname.wav
-│   └── ...
+│   ├── bye.wav
+│   ├── cooldiscordname.wav
+│   └── ...
 └── mutings
     ├── muted.wav
     ├── cooldiscordname.wav
     └── ...
 ```
+
+### HTTPS Configuration
+To enable HTTPS:
+
+1. Prepare your SSL certificate and private key files (e.g., using Let's Encrypt)
+2. Add the certificate files to your Docker volume by adding this to docker-compose.yml:
+   ```yaml
+   volumes:
+     - ./certs:/app/certs
+   ```
+3. Set the SSL environment variables in docker-compose.yml:
+   ```yaml
+   environment:
+     - SSL_CERT=/app/certs/cert.pem
+     - SSL_KEY=/app/certs/key.pem
+   ```
+4. Restart the container for changes to take effect
 
 ### Adding a bot to your server
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications) and select your application.
@@ -90,16 +120,38 @@ data
 Logs are stored in the `./logs` directory and rotated by size (1 MB). History of 5 logs is kept.
 
 ### Webserver
-You can use web interface to upload files to the `./data/audio` directory and to delete files from there. When file is uploaded it automatically converts to `.wav`. Use `!playsound` in Discord chat to request for a new updated soundboard buttons.  
-`WEBPAGE_USERNAME` and `WEBPAGE_PASSWORD` is required for a webserver to start. When it starts you can acccess it via browser on a `http://{WEBPAGE_HOST}:{WEBPAGE_PORT}/` page. Use username and password that you have set in environment variables (default location is [http://localhost:5100/](http://localhost:5100/)).  
-Please beware that there is only HTTP support for now, using it can be unsafe (that's why it defaults to localhost).  
-Uploaded files will be authomatically converted to WAV and volume will be normalized to -16.
+You can use web interface to manage audio files and user greetings. The interface provides:
+
+1. **Soundboard Management**:
+   - Upload new sounds to the soundboard
+   - Play and delete existing sounds
+   - Set any soundboard sound as a user's greeting
+
+2. **User Greetings Management**:
+   - Upload custom greeting sounds for specific Discord users
+   - View all users' greeting sounds with version history
+   - Play and delete greeting sounds
+   - Automatic versioning of greeting sounds (old versions are preserved)
+
+When file is uploaded it automatically converts to `.wav`. Use `!playsound` in Discord chat to request for a new updated soundboard buttons.  
+
+`WEBPAGE_USERNAME` and `WEBPAGE_PASSWORD` is required for a webserver to start. When it starts you can access it via browser:
+- HTTP: `http://{WEBPAGE_HOST}:{WEBPAGE_PORT}/`
+- HTTPS (if configured): `https://{WEBPAGE_HOST}:{WEBPAGE_PORT}/`
+
+Default location is [http://localhost:5100/](http://localhost:5100/) or [https://localhost:5100/](https://localhost:5100/) if HTTPS is enabled.
+
+Uploaded files will be automatically converted to WAV and volume will be normalized to -16.
 
 ## Usage 🚀
 
 1. Join a voice chat and experience personalized greetings!
 2. Trigger the soundboard by typing !playsound and click on the displayed buttons to play the sounds from `./data/audio` directory. Soundboard will be send to chat as a message and will remain there. If you update the `./data/audio` directory, you need to request new soundboard by typing `!playsound` again.
 3. Upload new audio to soundboard via webpage if you have set it up.
+4. Set custom greeting sounds for specific users through the web interface:
+   - Upload a new sound directly as a greeting
+   - Set an existing soundboard sound as a greeting
+   - View and manage greeting history for each user
 
 Beware that there is no differentiating between servers yet. If you have multiple servers with the bot, announcements for users and soundboard will be the same on all of them.  
 
