@@ -1,4 +1,3 @@
-version: "3"
 services:
   heyheybot:
     build:
@@ -6,13 +5,15 @@ services:
       dockerfile: Dockerfile
     container_name: HeyHeyBot
     environment:
-      # - DISCORD_TOKEN=YOUR_DISCORD_TOKEN
-      - DISCORD_CONTINUE_PRESENCE=True
-      - DISCORD_MUTING_ANNOUNCE=False
-      # - WEBPAGE_USERNAME=YOUR_WEBPAGE_USERNAME
-      # - WEBPAGE_PASSWORD=YOUR_WEBPAGE_PASSWORD
-      # - WEBPAGE_HOST=localhost
-      # - WEBPAGE_PORT=5100
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_CONTINUE_PRESENCE=${DISCORD_CONTINUE_PRESENCE:-True}
+      - DISCORD_MUTING_ANNOUNCE=${DISCORD_MUTING_ANNOUNCE:-False}
+      - WEBPAGE_USERNAME=${WEBPAGE_USERNAME}
+      - WEBPAGE_PASSWORD=${WEBPAGE_PASSWORD}
+      - WEBPAGE_HOST=${WEBPAGE_HOST:-localhost}
+      - WEBPAGE_PORT=${WEBPAGE_PORT:-5100}
+      # - SSL_CERT=${SSL_CERT:-/app/certs/fullchain.pem}
+      # - SSL_KEY=${SSL_KEY:-/app/certs/privkey.pem}
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

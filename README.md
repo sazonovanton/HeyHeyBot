@@ -19,7 +19,6 @@ Get your Discord bot token from [Discord Developer Portal](https://discord.com/d
 Easiest way to run the bot is using Docker.  
 Change `docker-compose.yml` file to match your settings (example below):
 ```yaml
-version: "3"
 services:
   heyheybot:
     build:
@@ -45,6 +44,7 @@ services:
     #   - 5100:5100
     restart: unless-stopped
 ```  
+You can set environment variables in `.env` file in the root directory of the project. Or you can set them directly in `docker-compose.yml` file.  
 Possible environment variables:
 * `DISCORD_TOKEN` - Discord bot token (required)
 * `DISCORD_CONTINUE_PRESENCE` - Whether bot will leave voice channel after playing audio (default: `False`)
